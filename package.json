@@ -1,0 +1,30 @@
+{
+  "name": "how-is-there-javascript-advanced-project",
+  "version": "1.0.0",
+  "description": "This is a JavaScript advanced project made for the start2impact guide. I choose the lifestyle section, for create a web app using Teleport city datas.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Icarus1989/how-is-there-javascript-advanced-project.git"
+  },
+  "keywords": [
+    "javascript",
+    "advanced",
+    "project",
+    "lifestyle",
+    "Teleport",
+    "data"
+  ],
+  "author": "Alex Valente",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Icarus1989/how-is-there-javascript-advanced-project/issues"
+  },
+  "homepage": "https://github.com/Icarus1989/how-is-there-javascript-advanced-project#readme",
+  "dependencies": {
+    "express": "^4.17.3"
+  }
+}
