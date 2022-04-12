@@ -1,6 +1,5 @@
 const express = require('express');
 // const fetch = require('node-fetch');
-// import fetch from 'cross-fetch';
 const fetch = require('cross-fetch');
 
 const app = express();
@@ -12,17 +11,6 @@ app.use(express.static('public'));
 app.use(express.json({
   limit: '10mb',
 }));
-
-// app.post('/api', (request, response) => {
-//   console.log('I got a request');
-//   // console.log(request.body);
-//   const data = request.body;
-//   console.log(data);
-//   response.json({
-//     status: 'success',
-//     nameOfTheCity: data.cityName,
-//   });
-// });
 
 app.get('/wiki/:cityname', async (request, response) => {
   console.log('Request Number 2');
