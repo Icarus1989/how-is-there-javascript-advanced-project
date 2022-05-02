@@ -4,19 +4,19 @@ const fetch = require('cross-fetch');
 const {
   default: axios
 } = require('axios');
-// const mongoose = require('mongoose');
+
 
 const Datastore = require('nedb');
+
 const cannyEdgeDetector = require('canny-edge-detector');
+
 const ImageCanny = require('image-js').Image;
 
 const app = express();
 const port = 3000;
 
-
 const database = new Datastore('citiesDatabase.db');
 database.loadDatabase();
-
 
 app.listen(port, () => {
   console.log(`Listening at ${port}`);
@@ -29,16 +29,12 @@ app.use(express.json({
 
 
 app.get('/wiki/:cityname', async (request, response) => {
-  // console.log('Request Number 2');
   const cityName = request.params.cityname;
-  // console.log(cityName);
-  // Qui divisione del name se più parole
 
   let fileUrl;
 
   try {
-    // here
-    const Pixabay_Api_Key = '14002767-fc7a727782d5b5a6b70bdeb00';
+    const Pixabay_Api_Key = `14002767-fc7a727782d5b5a6b70bdeb00`;
     const urlPixabay = `https://pixabay.com/api/?key=${Pixabay_Api_Key}&q=${cityName}&category=places&image_type=photo`;
     const dataPixabay = await axios.get(urlPixabay);
     const jsonPixabay = await dataPixabay["data"];
@@ -61,6 +57,7 @@ app.get('/wiki/:cityname', async (request, response) => {
 
 
   } catch {
+
     const urlTeleport = `https://api.teleport.org/api/urban_areas/slug:${(cityName).toLowerCase()}/images/`;
     // console.log(urlTeleport);
     // const dataTeleport = await fetch(urlTeleport);
@@ -73,22 +70,7 @@ app.get('/wiki/:cityname', async (request, response) => {
     response.json(jsonTeleport);
   }
 
-  if (fs.existsSync('public/tempImage/image.png')) {
-    fs.unlink('public/tempImage/image.png', (error) => {
-      if (error) {
-        throw error;
-      }
-      // console.log('Wikipedia File canceled.');
-    });
-  }
-  if (fs.existsSync('public/cannyimage/edge.png')) {
-    fs.unlink('public/cannyimage/edge.png', (error) => {
-      if (error) {
-        throw error;
-      }
-      // console.log('Canny Edge File canceled.');
-    });
-  }
+
   downloadAndCannyEdge(fileUrl);
 
 })
@@ -172,11 +154,31 @@ app.post('/cancelDb', (request, response) => {
 })
 // Sperimentale
 
+// let number = 0;
+
 async function downloadAndCannyEdge(url) {
+
+  if (fs.existsSync('public/tempImage/image.png')) {
+    fs.unlink('public/tempImage/image.png', (error) => {
+      if (error) {
+        throw error;
+      }
+      // console.log('Wikipedia File canceled.');
+    });
+  }
+  if (fs.existsSync('public/cannyimage/edge.png')) {
+    fs.unlink('public/cannyimage/edge.png', (error) => {
+      if (error) {
+        throw error;
+      }
+      // console.log('Canny Edge File canceled.');
+    });
+  }
+
   const response = await fetch(url);
   const buffer = await response.buffer();
   let writeFile = fs.writeFile(`public/tempImage/image.png`, await buffer, async () => {
-    const img = await ImageCanny.load('public/tempImage/image.png');
+    const img = await ImageCanny.load(`public/tempImage/image.png`);
     const grey = await img.grey();
     const options = {
       lowThreshold: 120,
@@ -187,6 +189,7 @@ async function downloadAndCannyEdge(url) {
     const edge = await cannyEdgeDetector(grey, options);
     return edge.save('public/cannyImage/edge.png');
   });
+  // number++;
   // console.log('finished downloading!');
   return writeFile;
 }

@@ -6,21 +6,28 @@ let UrbanAreasCompleteList = [];
 
 let arr = [];
 
+// let caches = new CacheStorage();
+
+document.documentElement.style.width = "100vh";
+document.body.style.width = "100vh";
+
 
 getCompleteListUrbanAreas(UrbanAreasCompleteList);
 createMenu(mainContainer);
 
 // inputContainer.style.position = 'absolute';
-inputContainer.style.top = document.documentElement.clientHeight / 2 - inputContainer.clientHeight / 1.5 + 'px';
+inputContainer.style.top = mainContainer.clientHeight / 2 - inputContainer.clientHeight / 1.5 + 'px';
 
 inputField.addEventListener('change', async (event) => {
+
+  mainContainer.scrollTo(0, 0);
 
   inputContainer.animate([
     // {
     //   transform: 'translateY(0px)'
     // },
     {
-      transform: `translateY(-${document.documentElement.clientHeight / 2 - inputContainer.clientHeight}px)`
+      transform: `translateY(-${mainContainer.clientHeight / 2 - inputContainer.clientHeight}px)`
     }
   ], {
     duration: 1000,
@@ -30,38 +37,12 @@ inputField.addEventListener('change', async (event) => {
     fill: 'forwards'
   });
 
-  // let deleteImg = document.querySelector('#imgContainer');
-
-  // let cache = new Cache();
-  // cache.delete(deleteImg).then(function (found) {
-  //   console.log(found);
-  //   // your cache entry has been deleted if found
-  // });
-
-  //   async function deleteOldCaches( currentCache ) {
-  //     const keys = await caches.keys();
-
-  //     for ( const key of keys ) {
-  //        const isOurCache = 'myapp-' === key.substr( 0, 6 );
-
-  //        if ( currentCache === key || ! isOurCache ) {
-  //           continue;
-  //        }
-
-  //        caches.delete( key );
-  //     }
-  //  }
-
-  //  try {
-  //     const data = await getData();
-  //     console.log( { data } );
-  //  } catch ( error ) {
-  //     console.error( { error } );
-  //  }
-
   searchCity(inputField, event.target);
 
 });
+
+
+
 
 async function retrievePixabay(name) {
   const wikiUrl = `wiki/${name}`;
@@ -152,10 +133,15 @@ async function getRegionsList(country) {
 }
 
 async function retrieveAlternativeCities(info, input) {
+
+  document.querySelector('#insertInput').blur();
+
   let resultsCont = document.querySelector('#resultsContainer');
   let indication = document.createElement('p');
-  indication.classList.add('indications');
+  indication.classList.add('tempIndication');
 
+
+  // indication.style.left = 0;
   if (document.querySelector('.saveBtn')) {
     document.querySelector('.saveBtn').remove();
   }
@@ -168,16 +154,25 @@ async function retrieveAlternativeCities(info, input) {
     if (document.querySelector('h2')) {
       disappearElement(document.querySelector('h2'), 0);
     }
+    if (document.querySelector('.rank')) {
+      disappearElement(document.querySelector('.rank'), 0);
+    }
+    disappearElement(document.querySelector('.menuBtn'), 0);
     indication.textContent = `The city ${input} is not been found - searching for other cities in this country...`;
-    resultsCont.append(indication);
+    resultsCont.children[0].append(indication);
+    indication.style.width = '73vw';
+    indication.style.left = resultsCont.children[0].getBoundingClientRect().width / 2 - indication.getBoundingClientRect().width / 2 + 'px';
+
 
     createSpinner(resultsCont);
+    // let spinner = new Spinner(resultsCont);
+    // spinner.drawSpinner();
 
     let country = await info["_embedded"]["city:search-results"][0]["_embedded"]["city:item"]["_embedded"]["city:country"]["iso_alpha2"];
     let data = await getRegionsList(country);
     let alternatesContainer = document.createElement('fieldset');
     let legend = document.createElement('legend');
-    legend.style.color = '#4a7edf';
+    legend.style.color = 'rgb(83, 83, 83)';
     legend.style.fontWeight = 700;
     // legend.style.textShadow = '3px 2px 3px rgb(15 15 15)';
     legend.style.paddingTop = '10px';
@@ -185,8 +180,8 @@ async function retrieveAlternativeCities(info, input) {
     legend.style.paddingBottom = '10px';
     legend.style.paddingRight = '20px';
     legend.style.borderRadius = '12px';
-    legend.style.background = 'rgb(221 227 233)';
-    legend.style.border = '6px solid rgb(105, 98, 91)';
+    legend.style.background = 'rgb(230, 230, 230)';
+    legend.style.border = '6px solid rgb(134, 134, 134)';
     legend.textContent = 'Cities available for this Country:';
     alternatesContainer.append(legend);
     // alternatesContainer.offsetTop = '100px';
@@ -220,15 +215,46 @@ async function retrieveAlternativeCities(info, input) {
       alternatesContainer.append(btn);
       btn.classList.add('altButtons');
     }
+
+    // SOSTITUIRE CON ---->
+    // let firstCityArray = [];
+
+    // for (let city of data) {
+    //   if (UrbanAreasCompleteList.includes(city)) {
+    //     firstCityArray.push(city);
+    //   }
+    // }
+
+    // let secondCityArray = [];
+    // for (let elem of firstCityArray) {
+    //   let result = await filterCityList(elem, country);
+    //   if (result && !secondCityArray.includes(result)) {
+    //     secondCityArray.push(await result);
+    //   }
+    // }
+
+    // secondCityArray.sort().map((elem) => {
+    //   let btn = document.createElement('button');
+    //   btn.textContent = elem;
+    //   alternatesContainer.append(btn);
+    //   btn.classList.add('altButtons');
+    // });
+    // SOSTITUIRE CON  <------
+
     // 100%
-    document.querySelector('.spinnerContainer').remove();
+    // document.querySelector('.spinnerContainer').remove();
+    // spinner.removeSpinner();
     // disappearElement(document.querySelector('.spinnerContainer'), 0);
     // fine spinner
     indication.textContent = `The city ${input} is not been found.`;
-    resultsCont.append(alternatesContainer);
+    indication.classList.remove('tempIndication');
+    indication.classList.add('indications');
+    resultsCont.children[0].append(alternatesContainer);
     if (secondCityArray.length > 10) {
+      // console.log(alternatesContainer.getBoundingClientRect());
+
       alternatesContainer.style.overflowY = 'scroll';
-      createNavButton('down', alternatesContainer, 'fixed');
+      createNavButton('down', alternatesContainer, 'absolute');
       // alternatesContainer.querySelector('.downDirection').style.top = alternatesContainer.getBoundingClientRect().top + alternatesContainer.clientHeight - alternatesContainer.querySelector('.downDirection').getBoundingClientRect().height - (alternatesContainer.clientTop) + 'px';
 
       // alternatesContainer.querySelector('.downDirection').style.top = alternatesContainer.getBoundingClientRect().bottom - 2 * alternatesContainer.querySelector('.downDirection').scrollHeight + (alternatesContainer.clientTop / 2) + 'px';
@@ -236,15 +262,17 @@ async function retrieveAlternativeCities(info, input) {
       // downBtn.style.top = alternatesContainer.getBoundingClientRect().height - downBtn.getBoundingClientRect().height + alternatesContainer.getBoundingClientRect().y - 2 + 'px';
       // alternatesContainer.querySelector('.downDirection').style.top = alternatesContainer.getBoundingClientRect().height - alternatesContainer.querySelector('.downDirection').getBoundingClientRect().height + alternatesContainer.getBoundingClientRect().y - 2 + 'px';
       alternatesContainer.querySelector('.downDirection').style.height = '8vh';
-      alternatesContainer.querySelector('.downDirection').style.width = alternatesContainer.scrollWidth + 2 + 'px';
+      alternatesContainer.querySelector('.downDirection').style.width = alternatesContainer.clientWidth + 'px';
       alternatesContainer.querySelector('.downDirection').style.border = '0px solid transparent';
       alternatesContainer.querySelector('.downDirection').style.padding = 0;
       alternatesContainer.querySelector('.downDirection').style.margin = 0;
       alternatesContainer.querySelector('.downDirection').style.borderRadius = '0px 0px 16px 16px';
       alternatesContainer.querySelector('.downDirection').style.zIndex = 100;
 
-      alternatesContainer.querySelector('.downDirection').style.top = alternatesContainer.getBoundingClientRect().height - alternatesContainer.querySelector('.downDirection').getBoundingClientRect().height + alternatesContainer.getBoundingClientRect().y - (alternatesContainer.clientTop / 2) + 'px';
-
+      // alternatesContainer.querySelector('.downDirection').style.bottom = alternatesContainer.querySelector('.downDirection').getBoundingClientRect().height + alternatesContainer.clientTop + 'px';
+      // alternatesContainer.querySelector('.downDirection').style.bottom = alternatesContainer.querySelector('.downDirection').getBoundingClientRect().height + alternatesContainer.clientTop + 'px';
+      alternatesContainer.querySelector('.downDirection').style.top = alternatesContainer.offsetTop + alternatesContainer.offsetHeight - alternatesContainer.querySelector('.downDirection').offsetHeight + 'px';
+      alternatesContainer.querySelector('.downDirection').style.left = alternatesContainer.getBoundingClientRect().left + (alternatesContainer.clientLeft) + 'px';
       // Here
       // alternatesContainer.querySelectorAll('.altButtons')[alternatesContainer.querySelectorAll('.altButtons').length - 1].style.marginBottom = '40%';
       alternatesContainer.querySelectorAll('.altButtons')[alternatesContainer.querySelectorAll('.altButtons').length - 1].classList.add('lastMargin');
@@ -254,10 +282,21 @@ async function retrieveAlternativeCities(info, input) {
       // alternatesContainer.lastElementChild.marginBottom = '20%';
       // alternatesContainer.querySelector('.downDirection').removeEventListener();
 
-      alternatesContainer.addEventListener('scroll', () => {
-        let downBtn = alternatesContainer.querySelector('.downDirection');
+      alternatesContainer.addEventListener('scroll', (event) => {
+        let downBtn = event.target.querySelector('.downDirection');
         downBtn.style.position = 'fixed';
-        downBtn.style.top = alternatesContainer.getBoundingClientRect().height - downBtn.getBoundingClientRect().height + alternatesContainer.getBoundingClientRect().y - (alternatesContainer.clientTop / 2) + 'px';
+        // downBtn.style.top = event.target.getBoundingClientRect().height - downBtn.getBoundingClientRect().height + event.target.getBoundingClientRect().y - (event.target.clientTop / 2) + 'px';
+        // downBtn.style.bottom = downBtn.getBoundingClientRect().height + alternatesContainer.clientTop + 'px';
+        // downBtn.style.top = alternatesContainer.getBoundingClientRect().bottom - downBtn.getBoundingClientRect().height - (alternatesContainer.clientTop / 2) + 'px';
+        // funzionante iOS
+        downBtn.style.top = alternatesContainer.getBoundingClientRect().bottom - downBtn.getBoundingClientRect().height + 'px';
+        // console.log(alternatesContainer.clientLeft)
+        // console.log(downBtn.clientLeft);
+        downBtn.style.left = alternatesContainer.getBoundingClientRect().left + (alternatesContainer.clientLeft) + 'px';
+
+        // funzionante iOS
+
+        // downBtn.style.bottom = '0px';
         downBtn.style.overflow = 'hidden';
 
         if (alternatesContainer.scrollTop >= alternatesContainer.scrollHeight - alternatesContainer.clientHeight) {
@@ -271,6 +310,13 @@ async function retrieveAlternativeCities(info, input) {
         }
 
       });
+      resultsCont.addEventListener('scroll', () => {
+        console.log('scroll');
+        if (alternatesContainer.querySelector('.downDirection')) {
+          alternatesContainer.querySelector('.downDirection').position = 'absolute';
+          alternatesContainer.querySelector('.downDirection').style.left = alternatesContainer.getBoundingClientRect().left + (alternatesContainer.clientLeft) + 'px';
+        }
+      })
     }
 
 
@@ -281,11 +327,14 @@ async function retrieveAlternativeCities(info, input) {
     inputField.addEventListener('change', () => {
       disappearElement(alternatesContainer, 0).then(() => {
         if (document.querySelector('.descriptionBox')) {
-          appearElement(document.querySelector('.descriptionBox'), 500);
+          appearElement(document.querySelector('.descriptionBox'), 500, 'grid');
           appearElement(document.querySelectorAll('table')[0], 500);
           appearElement(document.querySelectorAll('table')[1], 500);
           appearElement(document.querySelector('h2'), 500);
-          appearElement(document.querySelector('.saveBtn'), 500);
+          appearElement(document.querySelector('.rank'), 500);
+          appearElement(document.querySelector('.saveBtn'), 500, 'grid');
+          appearElement(document.querySelector('.menuBtn'), 500, 'grid');
+
         }
         indication.textContent = '';
         disappearElement(indication, 0);
@@ -297,11 +346,13 @@ async function retrieveAlternativeCities(info, input) {
         inputField.value = event.target.textContent;
         disappearElement(alternatesContainer, 0).then(() => {
           searchCity(inputField, inputField).then(() => {
-            appearElement(document.querySelector('.descriptionBox'), 500);
+            appearElement(document.querySelector('.descriptionBox'), 500, 'grid');
             appearElement(document.querySelectorAll('table')[0], 500);
             appearElement(document.querySelectorAll('table')[1], 500);
             appearElement(document.querySelector('h2'), 500);
-            appearElement(document.querySelector('.saveBtn'), 500);
+            appearElement(document.querySelector('.rank'), 500);
+            appearElement(document.querySelector('.saveBtn'), 500, 'grid');
+            appearElement(document.querySelector('.menuBtn'), 500, 'grid');
           });
         });
         indication.textContent = '';
@@ -326,31 +377,65 @@ async function retrieveAlternativeCities(info, input) {
           appearElement(document.querySelectorAll('table')[0], 500);
           appearElement(document.querySelectorAll('table')[1], 500);
           appearElement(document.querySelector('h2'), 500);
-          appearElement(document.querySelector('.saveBtn'), 500);
+          appearElement(document.querySelector('.rank'), 500);
+          appearElement(document.querySelector('.saveBtn'), 500, 'grid');
+          appearElement(document.querySelector('.menuBtn'), 500, 'grid');
         }
       });
     });
   }
 }
 
-async function createTitle(container, state, globalContinent) {
-  if (document.querySelector('h2')) {
-    document.querySelector('h2').textContent = `${await state}, ${ await globalContinent}`;
-  } else {
-    let header = document.createElement('h2');
-    header.textContent = `${await state}, ${ await globalContinent}`;
-    container.append(header);
-  }
-}
+// async function createTitle(container, state, globalContinent) {
+//   if (document.querySelector('h2')) {
+//     document.querySelector('h2').textContent = `${await state}, ${ await globalContinent}`;
+//   } else {
+//     let header = document.createElement('h2');
+//     header.textContent = `${await state}, ${ await globalContinent}`;
+//     container.append(header);
+//   }
+// }
 
-function createDescription(textBox, description, container) {
-  if (textBox) {
-    textBox.innerHTML = description;
+async function createDescription(state, globalContinent, rank, textbox, description, container) {
+
+  let rankBox;
+  let header;
+
+  // console.log(rank);
+
+  // let textbox;
+  if (document.querySelector('.descriptionBox')) {
+    textbox = document.querySelector('.descriptionBox');
+    for (elem of textbox.querySelectorAll('p')) {
+      elem.remove();
+    }
+    // textBox.innerHTML = description;
+    textbox.insertAdjacentHTML('beforeend', description);
+
   } else {
-    let textSpace = document.createElement('div');
-    textSpace.classList.add('descriptionBox');
-    textSpace.insertAdjacentHTML('afterbegin', description);
-    container.append(textSpace);
+    textbox = document.createElement('div');
+    textbox.classList.add('descriptionBox');
+    textbox.insertAdjacentHTML('afterbegin', description);
+    container.append(textbox);
+  }
+
+  if (document.querySelector('.rank')) {
+    rankBox = document.querySelector('.rank');
+    // rankBox.textContent = `Teleport City Score: ${rank.round(2)}`;
+  } else {
+    rankBox = document.createElement('p');
+    rankBox.classList.add('rank');
+    container.append(rankBox);
+  }
+  rankBox.textContent = `Teleport City Score: ${rank.toPrecision(4)}%`;
+
+  if (container.querySelector('h2')) {
+    container.querySelector('h2').textContent = `${await state}, ${ await globalContinent}`;
+  } else {
+    header = `${await state}, ${ await globalContinent}`;
+    header.textContent = `${await state}, ${ await globalContinent}`;
+    // console.log(container.children[0]);
+    container.children[0].insertAdjacentHTML('afterbegin', `<h2>${header}</h2>`);
   }
 }
 
@@ -391,10 +476,12 @@ function createSaveBtn(container) {
 }
 
 function loadImage(image, container, resultsContainer, path) {
+  // image.src = '';
+
   if (image) {
     // image.delete();
     image.style.width = "250vw";
-    image.style.height = (container.clientHeight * 1.1) + "px";;
+    image.style.height = (container.clientHeight * 1.01) + "px";;
     if (container.clientHeight < container.clientWidth) {
       image.style.width = "100vw";
       image.style.height = container.clientHeight + "px";
@@ -408,30 +495,38 @@ function loadImage(image, container, resultsContainer, path) {
       // image.style.height = 'auto';
     }
 
-    image.src = '';
+
+    const options = {
+      method: 'GET',
+      cache: 'no-cache'
+    }
 
     try {
+      image.src = '';
+
+
+
       setTimeout(async () => {
+
         // image.src = '';
-        image.src = await path;
-      }, 1200);
+        let response = await fetch(path, options);
+        let test = await response.blob();
+        let urlObj = URL.createObjectURL(await test);
+        image.src = await urlObj;
+        // let image = new Image(test);
+        // image.width = '300px';
+        // console.log(image);
+        // console.log(test);
+        // image.src = await path;
+      }, 500);
       image.addEventListener('load', () => {
         // image.src = await path;
         // console.log('load...');
         container.append(image);
       });
     } catch {
-      setTimeout(async () => {
-        // image.src = '';
-        image.src = await path;
-      }, 1200);
-      image.addEventListener('load', () => {
-        // image.src = await path;
-        // console.log('load...');
-        container.append(image);
-      });
+      console.log(error);
     }
-
 
     resultsContainer.scrollTo(0, 0);
 
@@ -441,7 +536,7 @@ function loadImage(image, container, resultsContainer, path) {
   } else {
     let image = document.createElement('img');
     image.style.width = "250vw";
-    image.style.height = (container.clientHeight * 1.1) + "px";
+    image.style.height = (container.clientHeight) + "px";
     // image.style.width = "auto";
     // image.style.height = container.clientHeight + "px";
     if (container.clientHeight < container.clientWidth) {
@@ -494,6 +589,7 @@ async function searchCity(inputElement, target) {
     const response = await axios.get(url);
     // console.log(response["data"]);
     const info = await response["data"];
+    console.log(info);
 
     try {
 
@@ -510,9 +606,13 @@ async function searchCity(inputElement, target) {
         },
         body: JSON.stringify(dbQueryName),
       }
+
+      // 
       const dbQuery = await fetch('/queryDb', optionsQueryDb);
       const dbResponse = await dbQuery.json();
       const dbDatas = dbResponse.data;
+
+      // 
 
       let urlScores;
       let dataScores;
@@ -524,10 +624,13 @@ async function searchCity(inputElement, target) {
         document.querySelector('.saveBtn').remove();
       }
 
-      createSaveBtn(document.querySelector('#resultsContainer'));
+      createSaveBtn(document.querySelector('#mainContainer'));
+
+      // 
 
       let saveButton = document.querySelector('.saveBtn');
       let fullName;
+      let ranking;
       let fromDb = false;
       let savingCount = 0;
 
@@ -536,11 +639,14 @@ async function searchCity(inputElement, target) {
         urlScores = await info["_embedded"]["city:search-results"][0]["_embedded"]["city:item"]["_embedded"]["city:urban_area"]["_links"]["ua:scores"]["href"];
         dataScores = await fetch(urlScores);
         infoScores = await dataScores.json();
+        // console.log(infoScores);
         nameAndState = await info["_embedded"]["city:search-results"][0]["_embedded"]["city:item"]["_embedded"]["city:urban_area"]["full_name"];
         continent = await info["_embedded"]["city:search-results"][0]["_embedded"]["city:item"]["_embedded"]["city:urban_area"]["continent"];
         fullName = `${nameAndState}, ${continent}`;
+        ranking = await infoScores["teleport_city_score"];
+        console.log(ranking);
         saveButton.querySelector('i').style.color = 'rgb(126, 126, 126)';
-        appearElement(document.querySelector('.saveBtn'), 500);
+        appearElement(document.querySelector('.saveBtn'), 500, 'grid');
 
         const dbData = {
           name: cityname,
@@ -568,17 +674,24 @@ async function searchCity(inputElement, target) {
           }
         });
       } else if (dbResponse.status == 'success' && dbResponse.action == 'read from db') {
-        appearElement(document.querySelector('.saveBtn'), 500);
+        appearElement(document.querySelector('.saveBtn'), 500, 'grid');
         infoScores = dbDatas;
+        console.log(dbDatas);
+        // 
         let completeNameArray = dbResponse.title.split(', ');
         cityname = completeNameArray[0];
         nameAndState = `${completeNameArray[0]}, ${completeNameArray[1]}`;
         continent = completeNameArray[2];
+        // 
+        ranking = dbDatas["teleport_city_score"];
+        console.log(ranking);
         savingCount = 1;
         fromDb = true;
         saveButton.querySelector('i').style.color = 'rgb(74, 126, 223)';
         // console.log('Read from db');
       }
+
+      // 
 
       fullName = `${nameAndState}, ${continent}`;
 
@@ -587,10 +700,22 @@ async function searchCity(inputElement, target) {
       } else if (mainContainer.clientWidth < mainContainer.clientHeight) {
         createPointButtons(document.querySelector('#resultsContainer'));
       }
-
-      createTitle(document.querySelector('#resultsContainer'), nameAndState, continent);
       const cityDescription = await infoScores["summary"];
-      createDescription(document.querySelector('.descriptionBox'), cityDescription, document.querySelectorAll('.dataDisplay')[0]);
+      // 
+
+      // createTitle(document.querySelectorAll('.dataDisplay')[0], nameAndState, continent).then(() => {
+      createDescription(nameAndState, continent, ranking, document.querySelector('.descriptionBox'), cityDescription, document.querySelectorAll('.dataDisplay')[0]);
+      let descriptionBox = document.querySelector('.descriptionBox');
+      let pElemsHeight = 0;
+      for (let pElem of descriptionBox.children) {
+        pElemsHeight += pElem.getBoundingClientRect().height;
+        // console.log(pElem.getBoundingClientRect().height);
+      }
+      // console.log(pElemsHeight);
+      // console.log(descriptionBox);
+      // console.log(descriptionBox.previousElementSibling);
+      // });
+
       const tableData = infoScores["categories"];
       const dataFirstPart = tableData.slice(0, 9);
       const dataSecondPart = tableData.slice(9, tableData.length);
@@ -627,7 +752,6 @@ async function searchCity(inputElement, target) {
           loadImage(imgContainer.querySelector('img'), imgContainer, document.querySelector('#resultsContainer'), firstPath);
 
         })
-        // Qui alternativa Wikipedia a Pixabay in caso di immagine mancante
       });
     } catch (error) {
       console.log(error);
@@ -666,10 +790,10 @@ async function disappearElement(elem, delay) {
   });
 }
 
-async function appearElement(elem, delay) {
+async function appearElement(elem, delay, display = 'block') {
   let opacity = 0.0;
   if (elem) {
-    elem.style.display = 'block';
+    elem.style.display = display;
     return await new Promise((resolve) => {
       setTimeout(() => {
         let interval = setInterval(() => {
@@ -689,21 +813,37 @@ async function appearElement(elem, delay) {
 
 }
 
+// creata class
 function createSpinner(container) {
+  // -
   let spinnerContainer = document.createElement('div');
+  // -
   // spinnerContainer resta fermo
+  // -
   spinnerContainer.classList.add('spinnerContainer');
+  // -
   let extDiv = document.createElement('div');
+  // -
   extDiv.classList.add('circleSegments');
+  // -
   spinnerContainer.append(extDiv);
+  // -
   let spinner = document.createElement('div');
+  // -
   spinner.classList.add('spinner');
+  // -
   spinnerContainer.append(spinner);
+  // -
   let icon = document.createElement('div');
+  // -
   icon.classList.add('spinnerIcon');
+  // -
   icon.insertAdjacentHTML('afterbegin', '<i class="fa-solid fa-globe"></i>');
+  // -
   spinnerContainer.append(icon);
+  // -
   container.append(spinnerContainer);
+  // -
 
 }
 
@@ -735,7 +875,7 @@ function createNavButton(direction, container, position) {
       directionBtn.style.width = container.clientWidth + 'px';
       directionBtn.style.height = container.clientHeight / 11 + 'px';
       directionBtn.classList.add('downDirection');
-      directionBtn.style.bottom = '0px';
+      // directionBtn.style.bottom = '0px';
       directionBtn.insertAdjacentHTML('afterbegin', '<i class="fa-solid fa-chevron-down"></i>');
       break;
     case 'up':
@@ -807,8 +947,9 @@ function createPointButtons(container) {
       }
     });
   }
+  // console.log(container.parentElement);
   btnsContainer.setAttribute('id', 'buttonsContainer');
-  container.append(btnsContainer);
+  container.parentElement.append(btnsContainer);
 
   for (let i = 0; i < btnsContainer.children.length; i++) {
     btnsContainer.children[0].style.color = "rgb(74, 126, 223)";
@@ -836,8 +977,9 @@ async function createIconBtn(container, icon) {
 
 function createMenu(mainElement) {
   const main = mainElement;
-  createIconBtn(document.querySelector('#resultsContainer'), '<i class="fa-solid fa-bars"></i>');
+  createIconBtn(main, '<i class="fa-solid fa-bars"></i>');
   const menuButton = document.querySelector('.menuBtn');
+  // main.append(menuButton);
 
   menuButton.addEventListener('click', async (event) => {
     if (event.target == menuButton.querySelector('i') || event.target == menuButton) {
@@ -851,7 +993,8 @@ function createMenu(mainElement) {
       list.classList.add('menuList');
       header.textContent = 'Cities on database...';
       // container.style.width = '75vw'; // <-- oppure basarsi sulla distanza tra lato destro e inizio lente
-      container.style.top = (-((main.clientHeight / 100) * 90)) + 'px';
+      container.style.top = (-((main.scrollHeight / 100) * 70)) + 'px';
+
 
       container.append(header);
       main.append(container);
@@ -877,15 +1020,20 @@ function createMenu(mainElement) {
           if (buttonEvent.target == listElement.querySelectorAll('button')[0]) {
             clearTimeout(timeout);
             inputField.value = listElement.firstElementChild.textContent;
-            container.style.top = (-((main.clientHeight / 100) * 90)) + 'px';
+            container.style.top = (-((main.scrollHeight / 100) * 70)) + 'px';
             closeBtn.remove();
             searchCity(inputField, inputField);
             if (container.querySelector('.downDirection')) {
               disappearElement(container.querySelector('.downDirection'), 0);
             }
+            container.addEventListener('transitionend', () => {
+              container.remove();
+              header.remove();
+              list.remove();
+            });
 
             inputContainer.animate([{
-              transform: `translateY(-${document.documentElement.clientHeight / 2 - inputContainer.clientHeight}px)`
+              transform: `translateY(-${main.scrollHeight / 2 - inputContainer.clientHeight}px)`
             }], {
               duration: 1000,
               easing: 'ease',
@@ -951,17 +1099,52 @@ function createMenu(mainElement) {
         document.querySelector('.fa-xmark').parentElement.style.display = 'block';
       }, 500);
 
-      createIconBtn(document.querySelector('#resultsContainer'), '<i class="fa-solid fa-xmark"></i>').then(() => {
-        closeBtn = document.querySelector('.fa-xmark').parentElement;
+      let closeBtn;
+
+      createIconBtn(main, '<i class="fa-solid fa-xmark"></i>').then(() => {
+        // test let closeBtn....
+        closeBtn = document.querySelectorAll('.menuBtn')[1];
+        // console.log(closeBtn);
+        closeBtn.style.zIndex = 13;
+      }).then(() => {
         closeBtn.addEventListener('click', () => {
           if (container.querySelector('.downDirection')) {
             disappearElement(container.querySelector('.downDirection'), 0);
           }
           clearTimeout(timeout);
+
           closeBtn.remove();
-          container.style.top = (-((main.clientHeight / 100) * 90)) + 'px';
+          container.style.top = (-((main.scrollHeight / 100) * 70)) + 'px';
+
+          container.addEventListener('transitionend', () => {
+            container.remove();
+            header.remove();
+            list.remove();
+          });
+
         });
+
       })
+
+
+
     }
   });
 }
+
+// forse inutile ai fini pratici
+window.addEventListener('resize', () => {
+  console.log(window.innerHeight);
+  mainContainer.style.height = '100vh';
+  document.querySelector('#imgContainer').style.width = '100vw';
+  document.querySelector('#imgContainer').style.height = '100vh';
+  document.querySelector('#secondImgContainer').style.width = '100vw';
+  document.querySelector('#secondImgContainer').style.height = '100vh';
+  document.querySelector('#imgContainer').querySelector('img').style.height = '100vh';
+  document.querySelector('#secondImgContainer').querySelector('img').style.height = '100vh';
+});
+
+document.body.addEventListener('scroll', () => {
+  mainContainer.scrollTo(0, 0);
+});
+// forse inutile ai fini pratici
