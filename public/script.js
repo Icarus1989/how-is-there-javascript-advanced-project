@@ -709,12 +709,7 @@ async function searchCity(inputElement, target) {
       let pElemsHeight = 0;
       for (let pElem of descriptionBox.children) {
         pElemsHeight += pElem.getBoundingClientRect().height;
-        // console.log(pElem.getBoundingClientRect().height);
       }
-      // console.log(pElemsHeight);
-      // console.log(descriptionBox);
-      // console.log(descriptionBox.previousElementSibling);
-      // });
 
       const tableData = infoScores["categories"];
       const dataFirstPart = tableData.slice(0, 9);
